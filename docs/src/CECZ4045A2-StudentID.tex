@@ -327,9 +327,9 @@ A simple \textbf{Grid Search} is performed on the two hyperparameters. The Embed
 Size \in \{200, 300, 400, 500, 600, 700, 800\}
 \end{displaymath}
 \subsubsection{Results} 
-After performing the grid search, we can see from Table \ref{tab:gridsearch} that an Embedding Size and Hidden Layer Size of \textbf{400} yields the best performance in terms of validation perplexity, therefore it is selected for the model.
-\begin{table}[H]
-	\label{tab:gridsearch}
+The grid search was performed and the following results are obtained:
+\begin{table}[h]
+\label{tab:gridsearch}
 	\begin{adjustbox}{width=\columnwidth}
 		\begin{tabular}{cccccccc}
 			\toprule
@@ -339,8 +339,12 @@ After performing the grid search, we can see from Table \ref{tab:gridsearch} tha
 			\bottomrule
 		\end{tabular}
 	\end{adjustbox}
+
 	\caption{Results of Grid Search}
 \end{table}
+
+From Table \ref{tab:gridsearch}, it can be seen that that an Embedding Size and Hidden Layer Size of \textbf{400} yields the best performance in terms of validation perplexity, therefore it is selected for the model.
+
 
 \subsubsection{Further Refinements and Chosen Model}
 \label{subsubsection:chosenmodel}
@@ -397,8 +401,7 @@ The model is then trained until it early-stopped and the following observations 
 \end{itemize}
 The following performance metrics are obtained:
 
-\begin{table}[H]
-	\label{tab:weighttiecomp}
+\begin{table}[h]
 	\begin{adjustbox}{width=\columnwidth}
 		\begin{tabular}{cccc}
 			\toprule
@@ -413,6 +416,7 @@ The following performance metrics are obtained:
 		\end{tabular}
 	\end{adjustbox}
 	\caption{Performance of Model w/ Parameter Sharing}
+	\label{tab:weighttiecomp}
 \end{table}
 
 \subsubsection{Analysis}
