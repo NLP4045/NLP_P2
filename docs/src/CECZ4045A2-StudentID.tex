@@ -222,7 +222,7 @@ the probability of the word ID representing the predicted word following
 the sequence of 7 preceding words that are fed into the input layer.
 
 \subsubsection{Training Set-up and Hyperparameters} \label{subsubsection:baselinesetup}
-For the baseline test, the following set-up and hyperparameters are used:
+For the baseline model, the following set-up and hyperparameters are used:
 \begin{itemize}
 	\item Learning Rate: \textbf{0.0001} (With annealing factor of \textbf{0.25})
 	\item Optimiser: \textbf{Adam}
@@ -461,10 +461,112 @@ In the example shown above, the model was able to predict the word \textbf{"elec
 Therefore, the model is still able to predict the next word given the context window relatively well.
 
 
+\section{Implementing a CNN model for Named Entity Recognition}
+In this section, we implement a CNN-based model for Named Entity Recognition (NER) with reference to the \textbf{Bi-directional LSTM-CNNs-CRF} architecture proposed by \citet{ma2016endtoend}. We will replace the Bi-directional LSTM layer with a CNN layer and assess the performance of the model. We will then increase the number of CNN layers and explore the relation between the number of CNN layers to performance of the model and choose the best model from the results.
+
+\subsection{Dataset}
+The dataset to be used for the NER task is the \textbf{CoNLL-2003} dataset, which is an annotated dataset of English data taken from the Reuters Corpus built upon Reuters news stories from August 1996 to August 1997 \cite{DBLP:journals/corr/cs-CL-0306050}
+
+\subsection{Implementation of CNN Architecture}
+\label{subsection:cnnimpl}
+The architecture of the model is based off the Bi-directional LSTM-CNNs-CRF model implemented by Anirudh and Peddamail \footnote[1]{\url{https://github.com/jayavardhanr/End-to-end-Sequence-Labeling-via-Bi-directional-LSTM-CNNs-CRF-Tutorial}}.
+
+The Bi-directional LSTM layer which performs word-level encoding is replaced with a CNN layer with a kernel size of (3, 125). The convolution operation essentially applies 400 different filter/kernel to 3 consecutive word embeddings with padding applied to corner cases, resulting in 400 output values for a single word. The output of this CNN layer of shape (N, 400) where N is the number of words in the input sentence is then fed to the CRF layer. Figure \ref{fig:cnnarch} depicts the architecture which is implemented. 
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[scale=0.4]{figures/cnn.png}
+	\caption{Proposed CNN Architecture}
+	\label{fig:cnnarch}
+\end{figure}
+
+\subsubsection{Training Set-up and Hyperparameters} \label{subsubsection:baselinesetup}
+For the baseline model, the following set-up and hyperparameters are used:
+\begin{itemize}
+	\item Learning Rate: \textbf{0.0001} (with learning rate decay)
+	\item Optimiser: \textbf{SGD}
+	\item CNN Layers: \textbf{1}
+	\item Dropout in fully connected layers: \textbf{50\%}
+	\item Training Epochs: \textbf{50} with early-stopping of \textbf{5} epochs patience
+	\item Loss function: \textbf{Negative Log Likelihood (NLL)}
+\end{itemize}
+
+\subsubsection{Evaluation Metric}
+The performance of the model will be evaluated based on its \textbf{F-1 score} on the \textbf{Validation Set}
+
+\subsection{Performance of Baseline CNN Model}
+
+After training the model for 20 epochs, the training was terminated early as the validation F-1 score did not increase for 5 consecutive epochs. At the end of training, the model had a F-Score of \textbf{87.51\%} on the \textbf{Validation Set}.
+
+The change of training and validation F-1 scores of the model with respect to the epoch can be seen in Figure \ref{fig:singlelayerf1}.
 
 
+\begin{figure}[H]
+	\centering
+	\includegraphics[scale=0.55]{figures/1layerf1.png}
+	\caption{F-1 Scores of Baseline Model vs Epochs}
+	\label{fig:singlelayerf1}
+\end{figure}
 
+\subsection{Effect on Performance with Additional CNN Layers}
+With the baseline model implemented, the effects of adding more CNN layers on the performance of the model is then explored. 
 
+\subsubsection{Implementation}
+The output of the CNN layer is reshaped such that it only has a single channel and a 2D shape of (N, 400). Similar to what has been done in Section \ref{subsection:cnnimpl}, a kernel size of (3, 400) is used for the convolution with padding done for the corner words with a output of channel of 400 to generate an output with the same shape as the input. This is then repeated for each additional layer that is required.
+
+\subsubsection{Experimental Results}
+The following number of CNN layers are used in the experiments conducted:
+
+\begin{displaymath}
+Layers \in \{1, 2, 3, 4, 5, 6\}
+\end{displaymath}
+The same training parameters (e.g., learning rate, optimiser, etc.) are used for all models and the F-1 scores of the best performing (in terms of Validation F-1 Score) is recorded in Table \ref{tab:cnnlayerscomparison} below.
+
+\begin{table}[h]
+	\begin{adjustbox}{width=\columnwidth}
+		\begin{tabular}{ccccc}
+			\toprule
+			Number of CNN Layers&Best Performing Epoch&F-1 (Training)&F-1 (Validation)&F-1 (Test)\\
+			\midrule
+			1&15&95.79\%&87.51\%&81.35\%\\
+			\textbf{2}&\textbf{37}&\textbf{99.28\%}&\textbf{92.72\%}&\textbf{87.08\%}\\		
+			3&16&97.88\%&92.36\%&87.39\%\\
+			4&20&97.78\%&92.52\%&86.72\%\\
+			5&20&96.77\%&91.82\%&86.63\%\\
+			6&28&95.90\%&91.49\%&85.99\%\\
+			\bottomrule
+		\end{tabular}
+	\end{adjustbox}
+	\caption{Comparison of Model Performance with Respect to Number of CNN Layers}
+	\label{tab:cnnlayerscomparison}
+\end{table}
+By plotting the graph of the Validation F-1 score against epochs for the 6 models, the following figure is obtained:
+\begin{figure}[H]
+	\centering
+	\includegraphics[scale=0.6]{figures/layerscomparison.png}
+	\caption{Validation F-1 Score versus Epochs}
+	\label{fig:layerscomparisonepoch}
+\end{figure}
+The validation F-1 scores for the 6 models is also visualised, resulting in the following figure: 
+\begin{figure}[H]
+	\centering
+	\includegraphics[scale=0.57]{figures/bestf1.png}
+	\caption{Validation F-1 Score against Number of CNN Layers}
+	\label{fig:layerscomparison}
+\end{figure}
+
+\subsubsection{Analysis}
+From Figures \ref{fig:layerscomparisonepoch} and \ref{fig:layerscomparison}, it can be seen that the F-1 score of the model is higher when the number of CNN layers is increased from 1, however the difference between the F-1 scores for the models with 2 convolution layers to 6 convolution layers do not differ much.
+
+As the number of convolution layers is increased, it can be observed that for 6 layers of convolution, the model took longer to converge as compared to 1 to 5 layers of convolution
+
+It is also worth noting that while the model with 2 convolution layers have the best performance, it also stopped training at a later epoch as compared to the other models. Therefore, the performance of the other modelss might be increased if the early-stopping patience of 5 epochs is increased. Which allows the model more time to train and improve on its validation F-1 score.
+
+\subsubsection{Chosen Model}
+From Table \ref{tab:cnnlayerscomparison} and Figure \ref{fig:layerscomparison}, the model with \textbf{2 convolution layers} is chosen as it has the highest F-1 score amongst all the other candidate models.
+
+\subsection{Recognizing Named Entities with Trained CNN Model}
+\section{Conclusion}
 \bibliographystyle{ACM-Reference-Format}
 \bibliography{bibfile}
 
