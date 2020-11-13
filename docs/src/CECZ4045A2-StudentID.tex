@@ -169,6 +169,7 @@ will be designed and implemented for the purpose of language modelling
 (i.e., to predict the next word given a sequence of words.)
 
 \subsection{Dataset}
+\label{subsection:dataset}
 The dataset to be used for this task is the \textbf{wikitext-2} dataset,
 which is a collection of text from Wikipedia.
 \subsubsection{Data Pre-processing}
@@ -563,10 +564,103 @@ As the number of convolution layers is increased, it can be observed that for 6 
 It is also worth noting that while the model with 2 convolution layers have the best performance, it also stopped training at a later epoch as compared to the other models. Therefore, the performance of the other modelss might be increased if the early-stopping patience of 5 epochs is increased. Which allows the model more time to train and improve on its validation F-1 score.
 
 \subsubsection{Chosen Model}
+\label{subsubsection:chosenCNN}
 From Table \ref{tab:cnnlayerscomparison} and Figure \ref{fig:layerscomparison}, the model with \textbf{2 convolution layers} is chosen as it has the highest F-1 score amongst all the other candidate models.
 
 \subsection{Recognizing Named Entities with Trained CNN Model}
+With the chosen model from Section \ref{subsubsection:chosenCNN}, we now try to perform NER tasks with it. We use the following text in our experiments:
+
+\begin{lstlisting}
+George was born in Scotland and raised in England
+// Expected named entities: 
+//   George - Person
+//   Scotland - Location
+//   England - Location
+
+George is an intern at Microsoft
+// Expected named entities:
+//   George - Person
+//   Microsoft - Organisation
+\end{lstlisting}
+
+After feeding the trained model with the text, the following results were obtained:
+\begin{lstlisting}
+Prediction:
+word : tag
+George : PER
+was : NA
+born : NA
+in : NA
+Scotland : LOC
+and : NA
+raised : NA
+in : NA
+England : LOC
+
+
+George : PER
+is : NA
+an : NA
+intern : NA
+at : NA
+Microsoft : ORG
+\end{lstlisting}
+
+From the above results, it can be seen that the model was able to recognise all entities and classify them correctly. 
+
+\subsubsection{Testing Model with Out-Of-Vocabulary Entities}
+We now try to test the model to perform NER on entities that are Out-Of-Vocabulary (OOV) (i.e., not encountered in the dataset). From section \ref{subsection:dataset}, we see that the corpus the model was trained on is a collection of Reuters news stories from the year 1996 to 1997. Therefore, one such example of an entity that can be used would be the organisation Facebook, which was only launched later in the year 2004\cite{rothman_2015}. The following text is thus used for the test:
+
+\begin{lstlisting}
+George is an intern at Facebook
+\end{lstlisting}
+\pagebreak
+The following results are obtained with the above text:
+
+\begin{lstlisting}
+Prediction:
+word : tag
+George : PER
+is : NA
+an : NA
+intern : NA
+at : NA
+Facebook : LOC
+\end{lstlisting}
+
+From the results above, it can be seen that Facebook has been misclassified as a Location instead of an Organisation, which confirms the initial hypothesis that the model would not perform as well when it comes to identifying and classifying Named Entities which are not in the training set. However, one interesting observation is that Facebook has been tagged as a "Location" instead, this indicated that the model might have been able to learn the relations with neighbouring words (i.e., a location should directly follow the preposition "at").
+
+\subsubsection{Testing Learned Spatial Relationships}
+
+Building upon the hypothesis that the model was able to learn the spatial relationships for the recognition of named entities (i.e., unseen named entites can be identified by sentence structure), we modify the previous test text to the following: 
+
+\begin{lstlisting}
+George goes to Facebook for work
+\end{lstlisting}
+
+By changing the sentence structure, the identification of Facebook as an organisation is now dependant on the surrounding words. 
+
+The following results are obtained with the above text:
+\begin{lstlisting}
+Prediction:
+word : tag
+George : PER
+goes : NA
+to : NA
+Facebook : ORG
+for : NA
+work : NA
+\end{lstlisting}
+
+Therefore, we conclude that the model was indeed able to learn and model spatial relations between words to correctly identify unseen named entities with varying success. 
+
 \section{Conclusion}
+In this assignment, we have successfully implemented two deep learning models for NLP tasks. 
+
+For the first task of implementing a FNN for the purpose of text prediction/generation, we successfully changed the implementation of the model from an RNN based model in the example code to a simple FFN architecture, as well as successfully modifying the data loading process to ensure that data is loaded in a window fashion to train the model correctly. Various regularisation techniques and hyperparameter tuning was also applied to arrive at a final model yielding the best performance. Finally, the effects of parameter sharing on model's training performance was also explored.
+
+For the second task of implementing a CNN architecture for NER task, we have successfully adapted the original Bi-directional LSTM-CNNs-CRF architecture to use a CNN word-level encoder instead of the original Bi-directional LSTM
+word-level encoding layer. Next, we added more CNN layers to the word-level encoder and explored the effects of additional layers on the performance of the model. Lastly, we have tested the model's ability to recognise entities which are OOV, and determined that the model was able to learn spatial relations between the input words as it was able to tag OOV Named Entities correctly based on neighbouring prepositions.
 \bibliographystyle{ACM-Reference-Format}
 \bibliography{bibfile}
 
