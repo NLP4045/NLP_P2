@@ -21,10 +21,10 @@
 %% same distribution. (The sources need not necessarily be
 %% in the same archive or directory.)
 %%
-%% The first command in your LaTeX source must be the \documentclass command.
+%% The first command in your LaTeX source must be the \documentclass command.@
 \documentclass[sigconf,nonacm=true]{acmart}
 \usepackage{listings}
-\usepackage{booktabs}% More proffesional look of tables.
+\usepackage{booktabs}% More professional look of tables.
 \usepackage{siunitx}% An awesome package for typesetting and manipulation numbers and units.
 \usepackage{caption}% Better control over caption
 \usepackage{lipsum}% Example text
@@ -106,18 +106,22 @@ frame=single
 %% used to denote shared contribution to the research.
 
 \author{Lim Jun Hong}
+\authornote{All authors contributed equally to this project.}
 \affiliation{\institution{Nanyang Technological University}}
 \email{LIMJ0209@e.ntu.edu.sg}
 
 \author{Tammy Lim Lee Xin}
+\authornotemark[1]
 \affiliation{\institution{Nanyang Technological University}}
 \email{TLIM045@e.ntu.edu.sg}
 
 \author{Lee Han Wei}
+\authornotemark[1]
 \affiliation{\institution{Nanyang Technological University}}
 \email{B160017@e.ntu.edu.sg}
 
 \author{Pang Yu Shao}
+\authornotemark[1]
 \affiliation{\institution{Nanyang Technological University}}
 \email{C170134@e.ntu.edu.sg}
 
@@ -161,7 +165,7 @@ frame=single
 \maketitle
 
 \section{Introduction}
-For this assignment, we implement two different Neural Network models using \verb|Pytorch| to perform NLP tasks such as \textbf{Text Prediction/ Generation} as well as \textbf{Named Entity Recognition (NER)}
+In this assignment, we implement two different Neural Network models using \verb|Pytorch| to perform NLP tasks such as \textbf{Text Prediction/ Generation} as well as \textbf{Named Entity Recognition (NER)}
 
 \section{Designing a Feed-Forward Neural Network for Text Generation}
 In this section, a simple Feed-Forward Neural Network (FFN) architecture
@@ -207,9 +211,7 @@ Refer to Figure ~\ref{fig:ffnarch} for the architecture of the proposed FFN.
 \subsubsection{Input Layer}
 As the model is to be trained on 8-grams (i.e., a sequence of 8 words),
 the input to the FFN will be the first 7 words (in word IDs format). The
-input layer will then convert the word IDs to its word vectors.
-These word vectors will be transposed and "concatenated" and fed as 
-inputs to the hidden layer.
+input embedding layer will then convert the word IDs to their respective word vectors. These word vectors will be transposed and concatenated and fed to the hidden layer.
 
 \subsubsection{Hidden Layer}
 The hidden layer of the network is a simple dense layer of 
@@ -273,10 +275,10 @@ by experimenting with various strategies such as
 model with the best performance.
 
 \subsection{Overcoming Over-fitting}
-\textbf{Over-fitting} occurs when a model learns the training data too closely, and as a result, fails to \textbf{generalise} to unseen data. This is clearly seen in Figure \ref{fig:baseloss} where the model's loss on training data is shown to continue decreasing while the model's loss on the validation data is shown to be increasing. This means that while the model would perform very well when predicting inputs from the training set, it would not perform well for the prediction of unseen input data.
+\textbf{Over-fitting} occurs when a model learns the training data too closely, and as a result, fails to \textbf{generalise} to unseen data. This is seen in Figure \ref{fig:baseloss} where the model's loss on training data is shown to continue decreasing while the model's loss on the validation data is shown to be increasing. This means that while the model would perform very well on inputs from the training examples (i.e., having a low loss on the training data), it would have poor performance on unseen input data.
 
 \subsubsection{Early Stopping}
-\textbf{Early stopping}, as its name implies, is a technique used to halt training of the model prematurely when over-fitting is detected. While it does not ensure that overfitting is reduced and the model would have a better performance, it will ensure that the model would not be over-trained. This would therefore save time that would be otherwise spent on training the model. For the training of the model in Section \ref{subsection:baselineresults}, Early Stopping would stop the training shortly after Epoch 20 as the validation loss did not improve after that.
+\textbf{Early stopping}, as its name implies, is a technique used to halt training of the model prematurely when over-fitting is detected. While it does not ensure that over-fitting is reduced and the model would have a better performance, it will ensure that the model would not be over-trained. This would therefore save time that would be otherwise spent on training the model. For the training of the model in Section \ref{subsection:baselineresults}, Early Stopping would stop the training shortly after Epoch 20 as the validation loss did not improve after that.
 
 For subsequent models, Early Stopping will be implemented with a \textbf{patience} of 5 Epochs. This means that if the \textbf{validation loss} does not improve for 5 consecutive Epochs, the training would be halted prematurely.
 
@@ -284,9 +286,9 @@ For subsequent models, Early Stopping will be implemented with a \textbf{patienc
 \textbf{L2 Regularisation} is one of the strategies that can be used to prevent over-fitting of a model. One of the causes of over-fitting is when there are very high weight values learnt by the model which causes a the model to learn one feature very closely/strongly which may only be specific to the training data. 
 
 Therefore, L2 Regularisation aims to prevent over-fitting of the model by penalizing very large weights that are learned by the model. This is done by summing all the squared weight values and then multiplying them by a factor before adding it to the computed error value. This results in the following loss function:
-\begin{equation}\label{key}
+\begin{displaymath}
 Loss = Error + \beta\sum_{i=1}^{W}{W_{i}}^{2}
-\end{equation}
+\end{displaymath}
 Where Error is the Cross-Entropy loss and \(\mathbf{\beta}\) is the regularising factor.
 
 A L2 regularisation factor of \(\mathbf{10^{-6}}\) is applied and implemented in Pytorch as a \textbf{weight decay} parameter to the optimiser. As a result, the training took longer to converge. The training was done for \textbf{100} epochs instead of 50 to allow the model more time to converge. 
@@ -320,7 +322,9 @@ During the training process, the model did not detect over-fitting and hence did
 
 
 \subsection{Hyperparameter Tuning}
-With the over-fitting measures in place, this sub-section aims to further improve on the model's performance by tuning the hyperparameters of the model. Specifically, the effects of tuning the  \textbf{Embedding Size} and \textbf{Hidden Layer Size} of the network will be evaluated and hyperparameters yielding the best performing will be chosen.
+With the over-fitting measures in place, this sub-section aims to further improve on the model's performance by tuning the hyperparameters of the model. Specifically, the effects of tuning the  \textbf{Embedding Size} and \textbf{Hidden Layer Size} of the network will be evaluated and values of hyperparameters yielding the best performing model will be chosen.
+
+
 \subsubsection{Methodology}
 A simple \textbf{Grid Search} is performed on the two hyperparameters. The Embedding Size and Hidden Layer Size are also kept to the same to each other as it is required to explore the effects of \textbf{Parameter Sharing} in a later section. The following values are used for the Grid Search:
 
@@ -330,7 +334,7 @@ Size \in \{200, 300, 400, 500, 600, 700, 800\}
 \subsubsection{Results} 
 The grid search was performed and the following results are obtained:
 \begin{table}[h]
-\label{tab:gridsearch}
+
 	\begin{adjustbox}{width=\columnwidth}
 		\begin{tabular}{cccccccc}
 			\toprule
@@ -340,8 +344,8 @@ The grid search was performed and the following results are obtained:
 			\bottomrule
 		\end{tabular}
 	\end{adjustbox}
-
 	\caption{Results of Grid Search}
+	\label{tab:gridsearch}
 \end{table}
 
 From Table \ref{tab:gridsearch}, it can be seen that that an Embedding Size and Hidden Layer Size of \textbf{400} yields the best performance in terms of validation perplexity, therefore it is selected for the model.
@@ -395,7 +399,7 @@ With the model chosen in Section \ref{subsubsection:chosenmodel}, Parameter Shar
 \begin{lstlisting}[language=Python]
 self.decoder.weight = self.encoder.weight
 \end{lstlisting}
-The model is then trained until it early-stopped and the following observations are made:
+The model was then trained until it early-stopped and the following observations are made:
 \begin{itemize}
 	\item The training reaches minimum validation loss at Epoch \textbf{85}, instead of \textbf{95} without weight tying.
 	\item The time of training per Epoch is decreased from \textbf{67s} to \textbf{55s}
@@ -462,6 +466,46 @@ In the example shown above, the model was able to predict the word \textbf{"elec
 Therefore, the model is still able to predict the next word given the context window relatively well.
 
 
+\subsection{Additional: Improving FFN Performance with Attention}
+Instead of connecting the embedding outputs directly to the hidden layer, we try to improve the model's performance by introducing \textbf{attention}. An attention mechanism provides an attention distribution (i.e., which parts of the input is being focused on) which can then be multiplied to the original embedding inputs so that input words which are focused would have their word vectors enhanced, while words which are not focused by the attention mechanism would have their word vectors attenuated.
+
+\subsubsection{Implementation}
+The "\textbf{Multi-Head Attention}" mechanism proposed by \citeauthor{NIPS2017_3f5ee243} \cite{NIPS2017_3f5ee243} was implemented as the attention mechanism in our model. 
+
+In a single attention layer (i.e., Single-Head), the same word embeddings are passed to 3 separate linear layers (i.e., \textbf{self-attention}) to compute the query, key and value representations. The query and key matrices are then multiplied to obtain a vector of \textbf{attention scores}, which is then scaled and passed through a softmax function so that the scores would become an \textbf{attention distribution} where all scores would sum to 1. Finally, the attention distribution is multiplied with the value vector to yield the embeddings representation with attention information applied to it.
+
+"\textbf{Multi-Head Attention}" is essentially having multiple attention units compute such attention representations in parallel before concatenating the outputs to form a single representation. This would result in an representation which is similar to an ensemble of all the attention units. In our implementation, we used $ h = 8 $ parallel attention layers (heads). Figure \ref{fig:attention} below shows the architecture of the FFN with the Multi-Head Attention implemented between the embedding layer and the hidden tanh layer.
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[scale=0.5]{figures/attentionarchi.png}
+	\caption{Architecture of the FFN with Multi-Head Attention}
+	\label{fig:attention}
+\end{figure}
+
+\subsubsection{Results} The model was trained until it early-stopped and the following results are obtained:
+
+\begin{table}[h]
+	\begin{adjustbox}{width=\columnwidth}
+		\begin{tabular}{lccc}
+			\toprule
+			&\multicolumn{3}{c}{(Metrics evaluated on \textbf{Validation} Set)}\\
+			Model &Best Perplexity&Best Loss&Best Prediction Accuracy\\
+			\midrule
+			Baseline & 221.29 & 5.40 & 20.6\% \\
+			After Hyperparameter Optimisation (\textbf{HO}) & 177.06 & 5.18 & 21.8\% \\
+			\textbf{HO} + weight tying (\textbf{WT})& 174.29 & 5.16 & 21.7\% \\
+			\textbf{HO} + \textbf{WT} + \textbf{Multi-Head Attention} & \textbf{167.14} & \textbf{5.12} & \textbf{22.0\%}\\
+			\bottomrule
+		\end{tabular}
+	\end{adjustbox}
+	\caption{Comparison of Performance Between Models}
+	\label{tab:finalffncomp}
+\end{table}
+
+\subsubsection{Analysis and Conclusion}
+From Table \ref{tab:finalffncomp}, it can be seen that introducing an attention mechanism to the encoding portion of the model significantly improves the performance of the model. In our implementation, it was able to further reduce the perplexity score of the model by \textbf{7.15} and increase the prediction accuracy by \textbf{.3\%}.
+
 \section{Implementing a CNN model for Named Entity Recognition}
 In this section, we implement a CNN-based model for Named Entity Recognition (NER) with reference to the \textbf{Bi-directional LSTM-CNNs-CRF} architecture proposed by \citet{ma2016endtoend}. We will replace the Bi-directional LSTM layer with a CNN layer and assess the performance of the model. We will then increase the number of CNN layers and explore the relation between the number of CNN layers to performance of the model and choose the best model from the results.
 
@@ -476,7 +520,7 @@ The Bi-directional LSTM layer which performs word-level encoding is replaced wit
 
 \begin{figure}[H]
 	\centering
-	\includegraphics[scale=0.4]{figures/cnn.png}
+	\includegraphics[scale=0.345]{figures/cnn.png}
 	\caption{Proposed CNN Architecture}
 	\label{fig:cnnarch}
 \end{figure}
@@ -489,7 +533,7 @@ For the baseline model, the following set-up and hyperparameters are used:
 	\item CNN Layers: \textbf{1}
 	\item Dropout in fully connected layers: \textbf{50\%}
 	\item Training Epochs: \textbf{50} with early-stopping of \textbf{5} epochs patience
-	\item Loss function: \textbf{Negative Log Likelihood (NLL)}
+	\item Loss function: \textbf{Cross-Entropy}
 \end{itemize}
 
 \subsubsection{Evaluation Metric}
@@ -510,7 +554,7 @@ The change of training and validation F-1 scores of the model with respect to th
 \end{figure}
 
 \subsection{Effect on Performance with Additional CNN Layers}
-With the baseline model implemented, the effects of adding more CNN layers on the performance of the model is then explored. 
+With the baseline model implemented, the effects of adding more CNN layers on the performance of the model was then explored. 
 
 \subsubsection{Implementation}
 The output of the CNN layer is reshaped such that it only has a single channel and a 2D shape of (N, 400). Similar to what has been done in Section \ref{subsection:cnnimpl}, a kernel size of (3, 400) is used for the convolution with padding done for the corner words with a output of channel of 400 to generate an output with the same shape as the input. This is then repeated for each additional layer that is required.
@@ -614,7 +658,7 @@ We now try to test the model to perform NER on entities that are Out-Of-Vocabula
 \begin{lstlisting}
 George is an intern at Facebook
 \end{lstlisting}
-\pagebreak
+
 The following results are obtained with the above text:
 
 \begin{lstlisting}
@@ -628,11 +672,13 @@ at : NA
 Facebook : LOC
 \end{lstlisting}
 
-From the results above, it can be seen that Facebook has been misclassified as a Location instead of an Organisation, which confirms the initial hypothesis that the model would not perform as well when it comes to identifying and classifying Named Entities which are not in the training set. However, one interesting observation is that Facebook has been tagged as a "Location" instead, this indicated that the model might have been able to learn the relations with neighbouring words (i.e., a location should directly follow the preposition "at").
+From the results above, it can be seen that Facebook has been misclassified as a Location instead of an Organisation, which confirms the initial hypothesis that the model would not perform as well when it comes to identifying and classifying Named Entities which are not in the training set. 
+
+One interesting observation is that Facebook has been tagged as a "Location" instead, this indicated that the model might have been able to learn the relations with neighbouring words (i.e., a location should directly follow the preposition "at").
 
 \subsubsection{Testing Learned Spatial Relationships}
 
-Building upon the hypothesis that the model was able to learn the spatial relationships for the recognition of named entities (i.e., unseen named entites can be identified by sentence structure), we modify the previous test text to the following: 
+Building upon the hypothesis that the model was able to learn the spatial relationships for the recognition of named entities (i.e., unseen named entities can be identified by sentence structure), we modify the previous test text to the following: 
 
 \begin{lstlisting}
 George goes to Facebook for work
@@ -657,7 +703,7 @@ Therefore, we conclude that the model was indeed able to learn and model spatial
 \section{Conclusion}
 In this assignment, we have successfully implemented two deep learning models for NLP tasks. 
 
-For the first task of implementing a FNN for the purpose of text prediction/generation, we successfully changed the implementation of the model from an RNN based model in the example code to a simple FFN architecture, as well as successfully modifying the data loading process to ensure that data is loaded in a window fashion to train the model correctly. Various regularisation techniques and hyperparameter tuning was also applied to arrive at a final model yielding the best performance. Finally, the effects of parameter sharing on model's training performance was also explored.
+For the first task of implementing a FNN for the purpose of text prediction/generation, we successfully changed the implementation of the model from an RNN based model in the example code to a simple FFN architecture, as well as successfully modifying the data loading process to ensure that data is loaded in a window fashion to train the model correctly. Various regularisation techniques and hyperparameter tuning was also applied to arrive at a final model yielding the best performance. Thereafter, the effects of parameter sharing on model's training performance was also explored. Finally, we have also successfully implemented an attention mechanism for use with the FFN model and have shown that the addition of attention mechanism to the implementation has significant performance improvements to the vanilla FFN model.
 
 For the second task of implementing a CNN architecture for NER task, we have successfully adapted the original Bi-directional LSTM-CNNs-CRF architecture to use a CNN word-level encoder instead of the original Bi-directional LSTM
 word-level encoding layer. Next, we added more CNN layers to the word-level encoder and explored the effects of additional layers on the performance of the model. Lastly, we have tested the model's ability to recognise entities which are OOV, and determined that the model was able to learn spatial relations between the input words as it was able to tag OOV Named Entities correctly based on neighbouring prepositions.
@@ -668,6 +714,7 @@ word-level encoding layer. Next, we added more CNN layers to the word-level enco
 \appendix
 \section{Generated Words From FNNModel}
 \label{appendix:generated}
+\begin{minipage}{\linewidth}
 \begin{lstlisting}
 . the song had already been viewed from moving pesca and nebaioth to the basis to be returned as a
 wild @-@ humanities humiliating his <unk> . extracted pitching this was revised not pervasive on the yorke with <unk> threadlike
@@ -681,6 +728,7 @@ watery to plays field and against the streets , but soon ophelia , where he was 
 , he shot to the commandos upon the series . the leibniz deal uses block millais received a number of
 
 \end{lstlisting}
+\end{minipage}
 \end{document}
 \endinput
 %%
