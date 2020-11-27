@@ -35,7 +35,7 @@ parser.add_argument('--epochs', type=int, default=50,
                     help='upper epoch limit')
 parser.add_argument('--batch_size', type=int, default=256, metavar='N',
                     help='batch size')
-parser.add_argument('--bptt', type=int, default=7,
+parser.add_argument('--seq_len', type=int, default=7,
                     help='sequence length')
 parser.add_argument('--dropout', type=float, default=0.2,
                     help='dropout applied to layers (0 = no dropout)')
@@ -108,9 +108,9 @@ corpus = data.Corpus(args.data)
 
 def batchify(data, bsz):
     # Work out how cleanly we can divide the dataset into bsz parts.
-    nbatch = data.size(0) // (bsz * (args.bptt+1))
+    nbatch = data.size(0) // (bsz * (args.seq_len+1))
     # Trim off any extra elements that wouldn't cleanly fit (remainders).
-    data = data.narrow(0, 0, nbatch * (bsz * (args.bptt+1)))
+    data = data.narrow(0, 0, nbatch * (bsz * (args.seq_len+1)))
 
     # Evenly divide the data across the bsz batches.
     data = data.view(bsz, -1).t().contiguous()
@@ -128,7 +128,7 @@ test_data = batchify(corpus.test, eval_batch_size)
 ntokens = len(corpus.dictionary)
 
 # Test: set hidden to 3* ntokens
-model = model.FNNModel(args.bptt, ntokens, args.emsize, args.nhid, args.dropout).to(device)
+model = model.FNNAttenModel(args.seq_len, ntokens, args.emsize, args.nhid, args.dropout, tie_weights=True).to(device)
 
 #criterion = nn.NLLLoss()
 criterion = F.cross_entropy
@@ -138,7 +138,7 @@ criterion = F.cross_entropy
 
 
 
-# get_batch subdivides the source data into chunks of length args.bptt.
+# get_batch subdivides the source data into chunks of length args.seq_len.
 # If source is equal to the example output of the batchify function, with
 # a bptt-limit of 2, we'd get the following two Variables for i = 0:
 # ┌ a g m s ┐ ┌ b h n t ┐
@@ -149,13 +149,13 @@ criterion = F.cross_entropy
 # to the seq_len dimension in the LSTM.
 
 # def get_batch(source, i):
-#     seq_len = min(args.bptt, len(source) - 1 - i)
+#     seq_len = min(args.seq_len, len(source) - 1 - i)
 #     data = source[i:i+seq_len]
 #     target = source[i+1:i+1+seq_len].view(-1)
 #     return data, target
 
 def get_batch(source, i):
-    seq_len = min(args.bptt, len(source) - 1 - i)
+    seq_len = min(args.seq_len, len(source) - 1 - i)
     data = source[i:i+seq_len]
     target = source[i+seq_len].view(-1)
     return data, target
@@ -168,9 +168,9 @@ def evaluate(data_source):
     total = 0
     correct = 0
     with torch.no_grad():
-        for i in range(0, data_source.size(0) - args.bptt):
+        for i in range(0, data_source.size(0) - args.seq_len):
             data, targets = get_batch(data_source, i)
-            if data.size(0) != args.bptt:
+            if data.size(0) != args.seq_len:
                 break
             output = model(data)
             total_loss += len(data) * criterion(output, targets).item()
@@ -189,11 +189,11 @@ def train():
     total_loss = 0.
     start_time = time.time()
 
-    for batch, i in enumerate(range(0, train_data.size(0) - args.bptt)):
+    for batch, i in enumerate(range(0, train_data.size(0) - args.seq_len)):
         data, targets = get_batch(train_data, i)
         # Starting each batch, we detach the hidden state from how it was previously produced.
         # If we didn't, the model would try backpropagating all the way to start of the dataset.
-        if data.size(0) != args.bptt:
+        if data.size(0) != args.seq_len:
             break
         model.zero_grad()
         output = model(data)
@@ -209,7 +209,7 @@ def train():
             elapsed = time.time() - start_time
             print('| epoch {:3d} | {:5d}/{:5d} batches | lr {:02.5f} | ms/batch {:5.2f} | '
                     'loss {:5.2f} | ppl {:8.2f}'.format(
-                epoch, batch, len(train_data) - args.bptt, lr,
+                epoch, batch, len(train_data) - args.seq_len, lr,
                 elapsed * 1000 / args.log_interval, cur_loss, math.exp(cur_loss)))
             total_loss = 0
             start_time = time.time()
@@ -309,4 +309,4 @@ print('=' * 89)
 
 if len(args.onnx_export) > 0:
     # Export the model in ONNX format.
-    export_onnx(args.onnx_export, batch_size=1, seq_len=args.bptt)
+    export_onnx(args.onnx_export, batch_size=1, seq_len=args.seq_len)
